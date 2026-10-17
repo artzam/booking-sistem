@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Tempahan & Dashboard Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen py-8 px-4 font-sans text-slate-800">
+
+  <div class="max-w-4xl mx-auto space-y-6">
+    
+    <!-- Header & Tab Navigation -->
+    <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+      <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">🏢 Tempahan Bilik Mesyuarat</h1>
+      <div class="flex space-x-2">
+        <button onclick="tukarTab('user')" id="tabUserBtn" class="px-4 py-2 rounded-lg font-medium text-sm bg-blue-600 text-white transition">
+          Borang Tempahan
+        </button>
+        <button onclick="tukarTab('admin')" id="tabAdminBtn" class="px-4 py-2 rounded-lg font-medium text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+          🔒 Admin Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 1: PENGGUNA (USER) ==================== -->
+    <div id="sectionUser" class="space-y-6">
+
+      <!-- LIVE FEED TEMPAHAN DILULUSKAN (LIVE CARDS) -->
+      <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 rounded-2xl shadow-md space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="relative flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+            <h2 class="text-md font-bold tracking-wide">LIVE FEED: Bilik Mesyuarat Diluluskan</h2>
+          </div>
+          <span class="text-xs text-blue-200 bg-blue-800/50 px-2.5 py-1 rounded-full border border-blue-700/50">Auto-Sync</span>
+        </div>
+
+        <!-- Grid Kad Live Feed -->
+        <div id="liveFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="col-span-full text-center py-4 text-blue-200 text-sm">Memuatkan tempahan terkini...</div>
+        </div>
+      </div>
+      
+      <!-- Borang Tempahan -->
+      <div class="bg-white p-6 md:p-8 rounded-2xl shadow-md border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-900 mb-4">📅 Borang Tempahan Baharu</h2>
+        <form id="formBooking" onsubmit="hantarTempahan(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nama Pemohon / Jabatan</label>
+            <input type="text" id="nama" required placeholder="Contoh: Encik Hafiz (Pemasaran)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Pilihan Bilik</label>
+              <select id="bilik" required class="w-full px-4 py-2 border rounded-lg bg-white">
+                <option value="">-- Pilih Bilik --</option>
+                <option value="Bilik A (8 Pax)">Bilik A (8 Pax)</option>
+                <option value="Bilik B (15 Pax)">Bilik B (15 Pax)</option>
+                <option value="Bilik VIP (20 Pax)">Bilik VIP (20 Pax)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Tarikh</label>
+              <input type="date" id="tarikh" required class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Slot Masa</label>
+              <select id="masa" required class="w-full px-4 py-2 border rounded-lg bg-white">
+                <option value="">-- Pilih Masa --</option>
+                <option value="09:00 - 10:00">09:00 AM - 10:00 AM</option>
+                <option value="10:00 - 11:00">10:00 AM - 11:00 AM</option>
+                <option value="11:00 - 12:00">11:00 AM - 12:00 PM</option>
+                <option value="14:00 - 15:00">02:00 PM - 03:00 PM</option>
+                <option value="15:00 - 16:00">03:00 PM - 04:00 PM</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" id="btnHantar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition">
+            Hantar Tempahan
+          </button>
+        </form>
+      </div>
+
+      <!-- Jadual Status Semua Permohonan -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+        <h3 class="text-md font-semibold text-slate-900 mb-3">📋 Senarai Rekod & Status Permohonan</h3>
+        <div class="overflow-x-auto max-h-64 overflow-y-auto border rounded-lg">
+          <table class="w-full text-sm text-left text-slate-600">
+            <thead class="text-xs uppercase bg-slate-100 sticky top-0 border-b">
+              <tr id="userTableHeader"></tr>
+            </thead>
+            <tbody id="userTableBody" class="divide-y">
+              <tr><td colspan="100%" class="p-4 text-center">Memuatkan data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: ADMIN DASHBOARD ==================== -->
+    <div id="sectionAdmin" class="hidden space-y-6">
+      
+      <div id="adminAuthBox" class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center max-w-md mx-auto space-y-4">
+        <h2 class="text-lg font-bold text-slate-900">🔒 Log Masuk Pentadbir</h2>
+        <input type="password" id="adminPass" placeholder="Masukkan Katalaluan Admin" class="w-full px-4 py-2 border rounded-lg text-center">
+        <button onclick="loginAdmin()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-lg transition">
+          Log Masuk
+        </button>
+      </div>
+
+      <div id="adminContent" class="hidden space-y-6">
+        <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-md flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold">Panel Pentadbir</h2>
+            <p class="text-xs text-slate-400">Pengurusan Kelulusan Tempahan Bilik Mesyuarat</p>
+          </div>
+          <button onclick="logoutAdmin()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition">
+            Log Keluar
+          </button>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-slate-900">Senarai Permohonan Masa Nyata</h3>
+            <button onclick="ambilData()" class="text-xs bg-slate-100 px-3 py-1.5 rounded border">🔄 Muat Semula</button>
+          </div>
+
+          <div class="overflow-x-auto max-h-96 overflow-y-auto border rounded-lg">
+            <table class="w-full text-sm text-left">
+              <thead class="text-xs uppercase bg-slate-100 sticky top-0 border-b">
+                <tr>
+                  <th class="p-3">ID</th>
+                  <th class="p-3">Pemohon</th>
+                  <th class="p-3">Bilik & Slot</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-center">Tindakan Admin</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody" class="divide-y">
+                <tr><td colspan="100%" class="p-4 text-center">Memuatkan data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const API_URL = "MASUKKAN_WEB_APP_URL_GOOGLE_ANDA_DI_SINI";
+    let isLoggedAdmin = false;
+
+    document.getElementById('tarikh').min = new Date().toISOString().split('T')[0];
+
+    function tukarTab(tab) {
+      if(tab === 'user') {
+        document.getElementById('sectionUser').classList.remove('hidden');
+        document.getElementById('sectionAdmin').classList.add('hidden');
+        document.getElementById('tabUserBtn').className = "px-4 py-2 rounded-lg font-medium text-sm bg-blue-600 text-white transition";
+        document.getElementById('tabAdminBtn').className = "px-4 py-2 rounded-lg font-medium text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      } else {
+        document.getElementById('sectionUser').classList.add('hidden');
+        document.getElementById('sectionAdmin').classList.remove('hidden');
+        document.getElementById('tabAdminBtn').className = "px-4 py-2 rounded-lg font-medium text-sm bg-slate-900 text-white transition";
+        document.getElementById('tabUserBtn').className = "px-4 py-2 rounded-lg font-medium text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      }
+    }
+
+    async function ambilData() {
+      try {
+        let res = await fetch(API_URL);
+        let data = await res.json();
+        
+        if (!data || data.length === 0) return;
+
+        const headers = data[0];
+        const rows = data.slice(1);
+
+        // 1. POPULATE LIVE FEED (Hanya Tempahan DILULUSKAN)
+        const tempahanDiluluskan = rows.filter(r => r[5] === 'Lulus');
+        const liveFeedContainer = document.getElementById('liveFeedContainer');
+
+        if (tempahanDiluluskan.length === 0) {
+          liveFeedContainer.innerHTML = `<div class="col-span-full text-center py-3 text-blue-200 text-xs">Tiada tempahan diluluskan buat masa ini.</div>`;
+        } else {
+          liveFeedContainer.innerHTML = tempahanDiluluskan.map(r => `
+            <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-xl border border-white/10 space-y-1">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-mono font-bold text-green-300">${r[0]}</span>
+                <span class="text-[10px] bg-green-500/20 text-green-300 border border-green-400/30 px-2 py-0.5 rounded-full font-medium">DISAHKAN</span>
+              </div>
+              <h4 class="font-semibold text-sm text-white truncate">${r[1]}</h4>
+              <p class="text-xs text-blue-100 font-medium">${r[2]}</p>
+              <div class="text-[11px] text-blue-200 pt-1 border-t border-white/10 flex justify-between">
+                <span>📅 ${r[3]}</span>
+                <span>⏰ ${r[4]}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // 2. PAPARAN JADUAL PENGGUNA
+        document.getElementById('userTableHeader').innerHTML = headers.slice(0, 6).map(h => `<th class="p-3 font-semibold">${h}</th>`).join('');
+        document.getElementById('userTableBody').innerHTML = rows.map(r => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs font-bold text-blue-600">${r[0]}</td>
+            <td class="p-3 font-medium text-slate-900">${r[1]}</td>
+            <td class="p-3">${r[2]}</td>
+            <td class="p-3">${r[3]}</td>
+            <td class="p-3 whitespace-nowrap">${r[4]}</td>
+            <td class="p-3">${badgeStatus(r[5])}</td>
+          </tr>
+        `).join('');
+
+        // 3. PAPARAN JADUAL ADMIN
+        if (isLoggedAdmin) {
+          document.getElementById('adminTableBody').innerHTML = rows.map(r => `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-mono text-xs font-bold">${r[0]}</td>
+              <td class="p-3 font-medium">${r[1]}</td>
+              <td class="p-3 text-xs">${r[2]}<br><span class="text-slate-500">${r[3]} (${r[4]})</span></td>
+              <td class="p-3">${badgeStatus(r[5])}</td>
+              <td class="p-3 text-center">
+                ${r[5] === 'Pending' ? `
+                  <button onclick="kemaskiniStatus('${r[0]}', 'Lulus')" class="bg-green-600 text-white text-xs px-2.5 py-1 rounded hover:bg-green-700 mr-1">Lulus</button>
+                  <button onclick="kemaskiniStatus('${r[0]}', 'Tolak')" class="bg-red-600 text-white text-xs px-2.5 py-1 rounded hover:bg-red-700">Tolak</button>
+                ` : `<span class="text-xs text-slate-400">Selesai</span>`}
+              </td>
+            </tr>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error("Gagal muat data:", err);
+      }
+    }
+
+    function badgeStatus(status) {
+      if (status === 'Lulus') return `<span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-semibold">Lulus</span>`;
+      if (status === 'Tolak') return `<span class="bg-red-100 text-red-700 text-xs px-2.5 py-1 rounded-full font-semibold">Tolak</span>`;
+      return `<span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-semibold">Pending</span>`;
+    }
+
+    async function hantarTempahan(e) {
+      e.preventDefault();
+      const bodyData = {
+        nama: document.getElementById('nama').value.trim(),
+        bilik: document.getElementById('bilik').value,
+        tarikh: document.getElementById('tarikh').value,
+        masa: document.getElementById('masa').value
+      };
+
+      await fetch(API_URL, { method: 'POST', body: JSON.stringify(bodyData) });
+      alert("✅ Tempahan dihantar! Status semasa: PENDING (Menunggu Kelulusan Admin).");
+      document.getElementById('formBooking').reset();
+      ambilData();
+    }
+
+    function loginAdmin() {
+      const pass = document.getElementById('adminPass').value;
+      if (pass) {
+        isLoggedAdmin = true;
+        document.getElementById('adminAuthBox').classList.add('hidden');
+        document.getElementById('adminContent').classList.remove('hidden');
+        ambilData();
+      }
+    }
+
+    function logoutAdmin() {
+      isLoggedAdmin = false;
+      document.getElementById('adminPass').value = '';
+      document.getElementById('adminAuthBox').classList.remove('hidden');
+      document.getElementById('adminContent').classList.add('hidden');
+    }
+
+    async function kemaskiniStatus(id, status) {
+      const pass = document.getElementById('adminPass').value;
+      let catatan = "";
+      if (status === "Tolak") {
+        catatan = prompt("Sila masukkan sebab penolakan (pilihan):") || "Slot tidak sesuai";
+      }
+
+      try {
+        let res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: "updateStatus",
+            id: id,
+            status: status,
+            catatan: catatan,
+            pass: pass
+          })
+        });
+
+        let result = await res.json();
+        alert(result.message);
+        ambilData();
+      } catch (err) {
+        alert("Ralat semasa kemaskini status.");
+      }
+    }
+
+    // Auto-refresh Live Feed setiap 15 saat
+    setInterval(ambilData, 15000);
+
+    ambilData();
+  </script>
+</body>
+</html>
